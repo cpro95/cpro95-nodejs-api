@@ -3,16 +3,20 @@ const router = express.Router();
 const sqlite3 = require('sqlite3').verbose();
 
 var db;
-var sql = `select * from movie where c05 > 8.00`;
+var db_file = './MyVideos107.db';
+// var openingDate = '2017-07-01';
+// var sql = `select * from movie where premiered >= '${openingDate}'`;
+
+var sql;
 
 // open the database connection
 const db_open = () => {
     //open the database
-    db = new sqlite3.Database('./MyVideos107.db', sqlite3.OPEN_READONLY,(err) => {
+    db = new sqlite3.Database(db_file, sqlite3.OPEN_READONLY,(err) => {
         if(err) {
             return console.error(err.message);
         } else {
-            console.log('Connected to the MyVideos107.db');
+            console.log('Connected to the ' +  db_file);
         }
     });
 }
@@ -37,26 +41,28 @@ router.use( (req, res, next) => {
 router.get('/', (req,res,next) => {
     if(Object.keys(req.query).length === 0) {
         // no query
+        sql = `select * from movie order by idMovie desc limit 10 offset 0`;
     } else {
         // parse search query to db sql
         const query = Object.keys(req.query);
         // sql = `select * from movie where c00 like '%${req.query.name}%'`;
 
-        sql = `select * from movie where`;
+        sql = `select * from movie order by idMovie desc`;
         query.map( (item) => {
             if(item === 'name') {
-                if(sql.slice(-5) != 'where') sql += ` and `;
-                sql += ` c00 like '%${req.query[item]}%'`;
+                sql += ` where c00 like '%${req.query[item]}%'`;
             }
-
-            if(item === 'rating') {
-                if(sql.slice(-5) != 'where') sql += ` and `;
-                sql += ` c05 >= ${req.query[item]}`;
-            }
-
+            
             if(item === 'id') {
-                if(sql.slice(-5) != 'where') sql += ` and `;
-                sql += ` idMovie = ${req.query[item]}`;
+                sql += ` where idMovie = ${req.query[item]}`;
+            }
+
+            if(item === 'limit') {
+                sql += ` limit ${req.query[item]}`;
+            }
+
+            if(item === 'offset') {
+                sql += ` offset ${req.query[item]}`;
             }
         });
         console.log(sql);

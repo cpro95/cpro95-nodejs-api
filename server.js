@@ -3,8 +3,12 @@ const http = require('http');
 const path = require('path');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const app = express();
+
+// cors
+app.use(cors());
 
 // view engine setup
 // app.set('views', path.join(__dirname, 'views'));
