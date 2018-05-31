@@ -41,28 +41,36 @@ router.use( (req, res, next) => {
 router.get('/', (req,res,next) => {
     if(Object.keys(req.query).length === 0) {
         // no query
-        sql = `select * from movie order by idMovie desc limit 10 offset 0`;
+        sql = `select idMovie, c00, c08, c20 from movie order by idMovie desc limit 10 offset 0`;
     } else {
         // parse search query to db sql
         const query = Object.keys(req.query);
         // sql = `select * from movie where c00 like '%${req.query.name}%'`;
 
-        sql = `select * from movie order by idMovie desc`;
+        sql = '';
         query.map( (item) => {
             if(item === 'name') {
-                sql += ` where c00 like '%${req.query[item]}%'`;
+                sql += `select idMovie, c00, c08, c20 from movie where c00 like '%${req.query[item]}%' order by idMovie desc`;
             }
-            
+  
             if(item === 'id') {
-                sql += ` where idMovie = ${req.query[item]}`;
+                sql += `select * from movie where idMovie = ${req.query[item]}`;
             }
 
             if(item === 'limit') {
-                sql += ` limit ${req.query[item]}`;
+                if(sql === '') {
+                    sql += `select idMovie, c00, c08, c20 from movie order by idMovie desc limit ${req.query[item]}`;
+                } else {
+                    sql += ` limit ${req.query[item]}`;
+                }
             }
 
             if(item === 'offset') {
-                sql += ` offset ${req.query[item]}`;
+                if(sql === '') {
+                    sql += `select idMovie, c00, c08, c20 from movie order by idMovie desc offset ${req.query[item]}`;
+                } else {
+                    sql += ` offset ${req.query[item]}`;
+                }
             }
         });
         console.log(sql);
@@ -73,7 +81,9 @@ router.get('/', (req,res,next) => {
 
     db.all(sql, [], (err, movies) => {
         if(err) {
-            throw err;
+            //throw err;
+            res.send('DB SQL query error: Please request correct sql query');
+            next(err);
         } else {
             // movies.c08, c20 is the type of xml
             // movies is array
@@ -83,7 +93,7 @@ router.get('/', (req,res,next) => {
                 if(row.c08 != '') {
                     parser.parseString(row.c08, (err, result) => {
                         // replacing preview link to movies.c08
-                        row.c08 = result.thumb.$.preview;
+                        row.c08 = result.thumb.$.preview;            
                     });
                 }
 
@@ -99,7 +109,6 @@ router.get('/', (req,res,next) => {
                 res.send('No data found');
             } else {
                 res.send(movies);
-                // res.json(movies);
             }
         }
     });
