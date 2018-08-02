@@ -12,19 +12,19 @@ var sql;
 // open the database connection
 const db_open = () => {
     //open the database
-    db = new sqlite3.Database(db_file, sqlite3.OPEN_READONLY,(err) => {
-        if(err) {
+    db = new sqlite3.Database(db_file, sqlite3.OPEN_READONLY, (err) => {
+        if (err) {
             return console.error(err.message);
         } else {
-            console.log('Connected to the ' +  db_file);
+            console.log('Connected to the ' + db_file);
         }
     });
 }
 
 // close the database connection
 const db_close = () => {
-    db.close( (err) => {
-        if(err) {
+    db.close((err) => {
+        if (err) {
             return console.error(err.message);
         } else {
             console.log('Close the database connection');
@@ -33,13 +33,18 @@ const db_close = () => {
 }
 
 // a middleware
-router.use( (req, res, next) => {
-    console.log('Time:' +  Date());
+router.use((req, res, next) => {
+    console.log('Time:' + Date());
     next();
 })
 
-router.get('/', (req,res,next) => {
-    if(Object.keys(req.query).length === 0) {
+router.get('/', (req, res, next) => {
+
+    // query
+    // id, name, limit, offset
+    var isTotal = false;
+
+    if (Object.keys(req.query).length === 0) {
         // no query
         sql = `select idMovie, c00, c08, c20 from movie order by idMovie desc limit 10 offset 0`;
     } else {
@@ -48,72 +53,97 @@ router.get('/', (req,res,next) => {
         // sql = `select * from movie where c00 like '%${req.query.name}%'`;
 
         sql = '';
-        query.map( (item) => {
-            if(item === 'name') {
+
+
+        query.map((item) => {
+            if (item === 'name') {
                 sql += `select idMovie, c00, c08, c20 from movie where c00 like '%${req.query[item]}%' order by idMovie desc`;
             }
-  
-            if(item === 'id') {
-                sql += `select * from movie where idMovie = ${req.query[item]}`;
+
+            if (item === 'id') {
+                sql += `select * from movie_view where idMovie = ${req.query[item]}`;
             }
 
-            if(item === 'limit') {
-                if(sql === '') {
+            if (item === 'limit') {
+                if (sql === '') {
                     sql += `select idMovie, c00, c08, c20 from movie order by idMovie desc limit ${req.query[item]}`;
                 } else {
                     sql += ` limit ${req.query[item]}`;
                 }
             }
 
-            if(item === 'offset') {
-                if(sql === '') {
+            if (item === 'offset') {
+                if (sql === '') {
                     sql += `select idMovie, c00, c08, c20 from movie order by idMovie desc offset ${req.query[item]}`;
                 } else {
                     sql += ` offset ${req.query[item]}`;
                 }
             }
-        });
-        console.log(sql);
-    }
 
-    // sql is prepared, then let's open db
-    db_open();
-
-    db.all(sql, [], (err, movies) => {
-        if(err) {
-            //throw err;
-            res.send('DB SQL query error: Please request correct sql query');
-            next(err);
-        } else {
-            // movies.c08, c20 is the type of xml
-            // movies is array
-            movies.forEach( (row) => {
-                const parser = new require('xml2js').Parser();
-
-                if(row.c08 != '') {
-                    parser.parseString(row.c08, (err, result) => {
-                        // replacing preview link to movies.c08
-                        row.c08 = result.thumb.$.preview;            
-                    });
-                }
-
-                if(row.c20 != '') {
-                    parser.parseString(row.c20, (err, result) => {
-                        // replacing preview link to movies.c20
-                        row.c20 = result.fanart.thumb[0].$.preview;
-                    });
-                }
-            });
-
-            if(Object.keys(movies).length === 0) {
-                res.send('No data found');
-            } else {
-                res.send(movies);
+            if (item === 'total') {
+                sql = `select count(idMovie) as total from movie`;
+                isTotal = true;
             }
-        }
-    });
 
+            // sql is prepare
+
+            if (item === 'total') {
+
+            }
+
+        }); // end of query.map
+        console.log(sql);
+    } // end of checking query
+
+    db_open();
+    if (isTotal) {
+        db.all(sql, [], (err, movies) => {
+            if (err) {
+                //throw err;
+                res.send('DB SQL query error: Please request correct sql query');
+                next(err);
+            } else {
+                res.send(movies[0]);
+            }
+        });
+    } else {
+        db.all(sql, [], (err, movies) => {
+            if (err) {
+                //throw err;
+                res.send('DB SQL query error: Please request correct sql query');
+                next(err);
+            } else {
+                // movies.c08, c20 is the type of xml
+                // movies is array
+                movies.forEach((row) => {
+                    const parser = new require('xml2js').Parser();
+
+                    if (row.c08 != '') {
+                        parser.parseString(row.c08, (err, result) => {
+                            // replacing preview link to movies.c08
+                            row.c08 = result.thumb.$.preview;
+                        });
+                    }
+
+                    if (row.c20 != '') {
+                        parser.parseString(row.c20, (err, result) => {
+                            // replacing preview link to movies.c20
+                            row.c20 = result.fanart.thumb[0].$.preview;
+                        });
+                    }
+                });
+
+                if (Object.keys(movies).length === 0) {
+                    res.send('No data found');
+                } else {
+                    res.send(movies);
+                }
+            }
+        });
+    }
     db_close();
+
+
 })
 
 module.exports = router;
