@@ -66,7 +66,7 @@ router.get('/', (req, res, next) => {
 
             if (item === 'limit') {
                 if (sql === '') {
-                    sql += `select idMovie, c00, c08, c20 from movie order by idMovie desc limit ${req.query[item]}`;
+                    sql += `select idMovie, c00, c08, c20, premiered, rating from movie_view order by idMovie desc limit ${req.query[item]}`;
                 } else {
                     sql += ` limit ${req.query[item]}`;
                 }
@@ -74,7 +74,7 @@ router.get('/', (req, res, next) => {
 
             if (item === 'offset') {
                 if (sql === '') {
-                    sql += `select idMovie, c00, c08, c20 from movie order by idMovie desc offset ${req.query[item]}`;
+                    sql += `select idMovie, c00, c08, c20, premiered, rating from movie_view order by idMovie desc offset ${req.query[item]}`;
                 } else {
                     sql += ` offset ${req.query[item]}`;
                 }

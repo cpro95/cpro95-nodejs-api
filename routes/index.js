@@ -14,7 +14,8 @@ router.get('/', function(req, res, next) {
                 <li>id</li>
                 <li>name</li>
 				<li>limit</li>
-				<li>offset</li>
+                <li>offset</li>
+                <li>total</li>
             </ul>
             <span>MIT, github.com/cpro95</span>
         </p>
