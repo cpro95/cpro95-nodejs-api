@@ -114,31 +114,43 @@ router.get('/', (req, res, next) => {
 
                     if (row.c08 != '') {
                         var poster = parser.xml2json(row.c08);
+                        // console.log(poster);
                         var poster_temp = [];
-                        poster.thumb.map( (i) => {
-                            if(i.aspect === 'poster') {
-                                poster_temp.push(i);
-                            } else if(i.aspect === undefined) {
-                                poster_temp.push(i);
-                            }
-                            // console.log(poster_temp);
-                        });
+                        
+                        if(Array.isArray(poster.thumb)) {
+                            poster.thumb.map((i) => {
+                                if (i.aspect === 'poster') {
+                                    poster_temp.push(i);
+                                } else if (i.aspect === undefined) {
+                                    poster_temp.push(i);
+                                }
+                                // console.log(poster_temp);
+                            });
+                        } else {
+                            poster_temp.push(poster.thumb);
+                        }
 
                         row.c08 = poster_temp[0].preview;
                     }
 
                     if (row.c20 != '') {
                         var fanart = parser.xml2json(row.c20);
-                        // console.log(fanart.fanart.thumb);
+                        // console.log(fanart);
                         var fanart_temp = [];
-                        fanart.fanart.thumb.map( (i) => {
-                            if(i.aspect === 'fanart') {
-                                fanart_temp.push(i);
-                            } else if(i.aspect === undefined) {
-                                fanart_temp.push(i);
-                            }
-                        });
 
+                        if (Array.isArray(fanart.fanart.thumb)) {
+                            fanart.fanart.thumb.map((i) => {
+                                if (i.aspect === 'fanart') {
+                                    fanart_temp.push(i);
+                                } else if (i.aspect === undefined) {
+                                    fanart_temp.push(i);
+                                }
+                            });
+                        } else {
+                            fanart_temp.push(fanart.fanart.thumb);
+                        }
+
+                        // console.log(fanart_temp);
                         row.c20 = fanart_temp[0].preview;
                     }
 
