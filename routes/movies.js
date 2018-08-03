@@ -110,21 +110,40 @@ router.get('/', (req, res, next) => {
                 // movies.c08, c20 is the type of xml
                 // movies is array
                 movies.forEach((row) => {
-                    const parser = new require('xml2js').Parser();
+                    const parser = require('xml2json-light');
 
                     if (row.c08 != '') {
-                        parser.parseString(row.c08, (err, result) => {
-                            // replacing preview link to movies.c08
-                            row.c08 = result.thumb.$.preview;
+                        var poster = parser.xml2json(row.c08);
+                        var poster_temp = [];
+                        poster.thumb.map( (i) => {
+                            if(i.aspect === 'poster') {
+                                poster_temp.push(i);
+                            } else if(i.aspect === undefined) {
+                                poster_temp.push(i);
+                            }
+                            // console.log(poster_temp);
                         });
+
+                        row.c08 = poster_temp[0].preview;
                     }
 
                     if (row.c20 != '') {
-                        parser.parseString(row.c20, (err, result) => {
-                            // replacing preview link to movies.c20
-                            row.c20 = result.fanart.thumb[0].$.preview;
+                        var fanart = parser.xml2json(row.c20);
+                        // console.log(fanart.fanart.thumb);
+                        var fanart_temp = [];
+                        fanart.fanart.thumb.map( (i) => {
+                            if(i.aspect === 'fanart') {
+                                fanart_temp.push(i);
+                            } else if(i.aspect === undefined) {
+                                fanart_temp.push(i);
+                            }
                         });
+
+                        row.c20 = fanart_temp[0].preview;
                     }
+
+
+
                 });
 
                 if (Object.keys(movies).length === 0) {
