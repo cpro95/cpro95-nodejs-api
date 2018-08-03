@@ -85,12 +85,6 @@ router.get('/', (req, res, next) => {
                 isTotal = true;
             }
 
-            // sql is prepare
-
-            if (item === 'total') {
-
-            }
-
         }); // end of query.map
         console.log(sql);
     } // end of checking query
