@@ -46,7 +46,7 @@ router.get('/', (req, res, next) => {
 
     if (Object.keys(req.query).length === 0) {
         // no query
-        sql = `select idMovie, c00, c08, c20 from movie order by idMovie desc limit 10 offset 0`;
+        sql = `select idMovie, c00, c08, c20 from movie_view order by premiered desc limit 20 offset 0`;
     } else {
         // parse search query to db sql
         const query = Object.keys(req.query);
