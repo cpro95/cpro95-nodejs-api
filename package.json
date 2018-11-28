@@ -9,14 +9,13 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "sqlite3": "^4.0.2"
-  },
+  "devDependencies": {},
   "dependencies": {
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "express": "^4.16.3",
     "morgan": "^1.9.1",
+    "sqlite3": "^4.0.4",
     "xml2json-light": "^1.0.6"
   }
 }
